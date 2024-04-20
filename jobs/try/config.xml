@@ -1,0 +1,59 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1400.v7fd111b_ec82f">
+  <actions/>
+  <description>try</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3894.vd0f0248b_a_fc4">
+    <script>pipeline {
+    agent any
+
+    environment {
+        // Define environment variables if needed
+        DOCKER_REGISTRY = &apos;your.docker.registry&apos;
+        IMAGE_NAME = &apos;your_image_name&apos;
+        IMAGE_TAG = &apos;latest&apos;
+    }
+
+    stages {
+        stage(&apos;Checkout&apos;) {
+            steps {
+                // Checkout source code from your version control system (e.g., Git)
+                git &apos;https://github.com/your/repository.git&apos;
+            }
+        }
+
+        stage(&apos;Build Docker Image&apos;) {
+            steps {
+                // Build the Docker image
+                script {
+                    docker.build(&quot;${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}&quot;)
+                }
+            }
+        }
+
+        stage(&apos;Push Docker Image&apos;) {
+            steps {
+                // Push the Docker image to the registry
+                script {
+                    docker.withRegistry(&apos;https://${DOCKER_REGISTRY}&apos;, &apos;docker-credentials-id&apos;) {
+                        docker.image(&quot;${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}&quot;).push()
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            // Clean up resources if needed
+            cleanWs()
+        }
+    }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
